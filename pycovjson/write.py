@@ -108,7 +108,10 @@ class Writer(object):
             description = self.reader.get_std_name(variable)
             unit = self.reader.get_units(variable)
             symbol = self.reader.dataset[variable].units
-            label = self.reader.dataset[variable].long_name
+            try:
+                label = self.reader.dataset[variable].long_name
+            except AttributeError:
+                label = 'UNKNOWN'
             params = Parameter(description=description, variable_name=variable,
                                symbol=symbol, unit=unit, observed_property=label)
 
@@ -131,7 +134,8 @@ class Writer(object):
         for variable in self.vars_to_write:
             print("Constructing Range from variable:", variable)
 
-            axis_names = list(map(str.lower, list(self.reader.get_axis(variable))))
+            #axis_names = list(map(str.lower, list(self.reader.get_axis(variable))))
+            axis_names = list(map(str.lower, list(self.reader.get_axes())))
 
             if self.tiled:
                 tile_set_obj = TileSet(self.tile_shape, self.urlTemplate)

@@ -310,6 +310,8 @@ class NetCDFReader(object):
         date_list = []
         times = self.dataset[t_variable].values
 
+        # XXX Cope with scalar time
+        times = [times]
         for time in times:
             try:
                 time = pd.to_datetime(str(time))
@@ -345,10 +347,13 @@ class NetCDFReader(object):
         z_list = ['depth', 'DEPTH']
         for coord in self.dataset.coords:
             try:
-                if self.dataset[coord].axis == 'T':
-                    axes_dict['t'] = coord
-                if self.dataset[coord].axis == 'Z':
-                    axes_dict['z'] = coord
+                axis = self.dataset[coord].attrs.get('axis', '').lower()
+                if axis in ('x', 'y', 'z', 't'):
+                    axes_dict[axis] = coord
+                #if self.dataset[coord].axis == 'T':
+                #    axes_dict['t'] = coord
+                #if self.dataset[coord].axis == 'Z':
+                #    axes_dict['z'] = coord
             except:
                 pass
 
@@ -418,6 +423,10 @@ class NetCDFReader(object):
         return self.convert_time(t_var)
 
     def get_z(self):
+        z_name = self.get_axes()['z']
+        z_values = self.dataset[z_name].values
+        print(z_values)
+        return z_values
 
         for elem in self.dataset.coords:
             if type(self.dataset[elem]) in ['numpy.datetime64', 'numpy.datetime32', 'datetime.datetime']:
